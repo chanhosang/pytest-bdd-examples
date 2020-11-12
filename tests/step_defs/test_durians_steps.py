@@ -1,23 +1,31 @@
-from pytest_bdd import scenario, given, when, then
+from pytest_bdd import scenarios, parsers, given, when, then
 
 from durians import DurianBasket
 
 
-@scenario('../features/durians.feature', 'Add durians to a bamboo basket')
-def test_add():
-    pass
+scenarios('../features/durians.feature')
 
 
-@given("the bamboo basket has 2 durians", target_fixture="basket")
-def basket():
-    return DurianBasket(initial_count=2)
+EXTRA_TYPES = {
+    'Number': int,
+}
 
 
-@when("4 durians are added to the bamboo basket")
-def add_durians(basket):
-    basket.add(4)
+@given(parsers.cfparse('the bamboo basket has "{initial:Number}" durians', extra_types=EXTRA_TYPES), target_fixture="basket")
+def basket(initial):
+    return DurianBasket(initial_count=initial)
 
 
-@then("the bamboo basket contains 6 durians")
-def basket_has_total(basket):
-    assert basket.count == 6
+@when(parsers.cfparse('"{some:Number}" durians are added to the bamboo basket', extra_types=EXTRA_TYPES))
+def add_durians(basket, some):
+    basket.add(some)
+
+
+@when(parsers.cfparse('"{some:Number}" durians are removed from the bamboo basket', extra_types=EXTRA_TYPES))
+def remove_durians(basket, some):
+    basket.remove(some)
+
+
+@then(parsers.cfparse('the bamboo basket contains "{total:Number}" durians', extra_types=EXTRA_TYPES))
+def basket_has_total(basket, total):
+    assert basket.count == total
